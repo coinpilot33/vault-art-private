@@ -91,7 +91,7 @@ export const Gallery = () => {
       // For now, we'll use mock data with enhanced details
       const enhancedArtworks = mockArtworks.map(artwork => ({
         ...artwork,
-        // Add more realistic data
+        // Add more realistic data with safe defaults
         timeRemaining: Math.floor(Math.random() * 72) + 1, // hours
         totalBids: Math.floor(Math.random() * 100) + 10,
         priceChange: (Math.random() - 0.5) * 20, // percentage change
@@ -101,6 +101,15 @@ export const Gallery = () => {
       setArtworks(enhancedArtworks);
     } catch (error) {
       console.error('Error loading artworks:', error);
+      // Set fallback data in case of error
+      setArtworks(mockArtworks.map(artwork => ({
+        ...artwork,
+        timeRemaining: 24,
+        totalBids: 10,
+        priceChange: 0,
+        isTrending: false,
+        isEndingSoon: false
+      })));
     } finally {
       setLoading(false);
     }
@@ -197,7 +206,7 @@ export const Gallery = () => {
                         <span>{artwork.timeRemaining}h left</span>
                       </div>
                     </div>
-                    {artwork.priceChange !== 0 && (
+                    {artwork.priceChange !== undefined && artwork.priceChange !== 0 && typeof artwork.priceChange === 'number' && (
                       <div className={`text-sm mt-2 ${
                         artwork.priceChange > 0 ? 'text-green-500' : 'text-red-500'
                       }`}>
