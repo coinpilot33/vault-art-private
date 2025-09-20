@@ -1,4 +1,5 @@
 import { Lock, Shield, Eye, Github, Twitter, MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
@@ -71,10 +72,10 @@ export const Footer = () => {
             <div>
               <h5 className="font-semibold mb-4">Platform</h5>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Gallery</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">My Vault</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Auctions</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Analytics</a></li>
+                <li><Link to="/gallery" className="hover:text-primary transition-colors">Gallery</Link></li>
+                <li><Link to="/my-vault" className="hover:text-primary transition-colors">My Vault</Link></li>
+                <li><Link to="/auctions" className="hover:text-primary transition-colors">Auctions</Link></li>
+                <li><Link to="/invest" className="hover:text-primary transition-colors">Invest</Link></li>
               </ul>
             </div>
 

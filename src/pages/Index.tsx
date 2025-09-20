@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Shield, TrendingUp, Users, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -76,11 +77,11 @@ const Index = () => {
                 Join thousands of investors who trust ArtVault for private, secure art investments
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="vault-button">
-                  <a href="/gallery">Explore Gallery</a>
+                <Button size="lg" className="vault-button" asChild>
+                  <Link to="/gallery">Explore Gallery</Link>
                 </Button>
-                <Button size="lg" variant="outline">
-                  <a href="/invest">Start Investing</a>
+                <Button size="lg" variant="outline" asChild>
+                  <Link to="/invest">Start Investing</Link>
                 </Button>
               </div>
             </div>

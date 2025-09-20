@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Wallet, BarChart3, User } from "lucide-react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
+import { Link } from 'react-router-dom';
 import monaLisaLogo from "@/assets/mona-lisa-crypto-logo.png";
 
 export const Header = () => {
@@ -26,18 +27,18 @@ export const Header = () => {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="/gallery" className="text-foreground hover:text-primary transition-colors">
+            <Link to="/gallery" className="text-foreground hover:text-primary transition-colors">
               Gallery
-            </a>
-            <a href="/my-vault" className="text-foreground hover:text-primary transition-colors">
+            </Link>
+            <Link to="/my-vault" className="text-foreground hover:text-primary transition-colors">
               My Vault
-            </a>
-            <a href="/auctions" className="text-foreground hover:text-primary transition-colors">
+            </Link>
+            <Link to="/auctions" className="text-foreground hover:text-primary transition-colors">
               Auctions
-            </a>
-            <a href="/invest" className="text-foreground hover:text-primary transition-colors">
+            </Link>
+            <Link to="/invest" className="text-foreground hover:text-primary transition-colors">
               Invest
-            </a>
+            </Link>
           </nav>
 
           {/* Wallet Connection */}
