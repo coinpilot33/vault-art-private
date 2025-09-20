@@ -1,0 +1,233 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Art Vault Color Palette */
+    --background: 220 13% 5%;
+    --foreground: 45 100% 85%;
+
+    --card: 220 13% 8%;
+    --card-foreground: 45 100% 85%;
+
+    --popover: 220 13% 8%;
+    --popover-foreground: 45 100% 85%;
+
+    --primary: 45 100% 70%;
+    --primary-foreground: 220 13% 5%;
+
+    --secondary: 220 13% 12%;
+    --secondary-foreground: 45 100% 85%;
+
+    --muted: 220 13% 10%;
+    --muted-foreground: 45 20% 65%;
+
+    --accent: 45 85% 60%;
+    --accent-foreground: 220 13% 5%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 45 100% 85%;
+
+    --border: 220 13% 15%;
+    --input: 220 13% 12%;
+    --ring: 45 100% 70%;
+
+    --radius: 0.75rem;
+
+    /* Custom Art Vault Tokens */
+    --vault-gold: 45 100% 70%;
+    --vault-gold-muted: 45 85% 60%;
+    --vault-gold-dark: 45 100% 45%;
+    --vault-dark: 220 13% 5%;
+    --vault-surface: 220 13% 8%;
+    --vault-surface-hover: 220 13% 12%;
+    --vault-border: 220 13% 15%;
+    --vault-text: 45 100% 85%;
+    --vault-text-muted: 45 20% 65%;
+
+    /* Gradients */
+    --gradient-vault: linear-gradient(135deg, hsl(var(--vault-dark)), hsl(var(--vault-surface)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--vault-gold)), hsl(var(--vault-gold-muted)));
+    --gradient-encrypted: linear-gradient(45deg, hsl(var(--vault-surface)), hsl(var(--vault-surface-hover)));
+
+    /* Shadows */
+    --shadow-vault: 0 8px 32px hsl(var(--vault-dark) / 0.8);
+    --shadow-gold: 0 0 30px hsl(var(--vault-gold) / 0.3);
+    --shadow-encrypted: 0 4px 20px hsl(var(--vault-dark) / 0.6);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+@layer components {
+  /* Encrypted Frame Effects */
+  .encrypted-frame {
+    @apply relative overflow-hidden bg-gradient-to-br from-card to-secondary;
+    box-shadow: var(--shadow-encrypted);
+    border: 1px solid hsl(var(--vault-border));
+  }
+
+  .encrypted-frame::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent;
+    animation: shimmer 3s infinite;
+    transform: translateX(-100%);
+  }
+
+  .encrypted-overlay {
+    @apply absolute inset-0;
+    background: linear-gradient(135deg, hsl(var(--vault-dark) / 0.8), hsl(var(--vault-surface) / 0.6));
+    backdrop-filter: blur(8px);
+  }
+
+  /* Gallery Hover Effects */
+  .gallery-item {
+    @apply transition-all duration-500 hover:scale-105;
+    box-shadow: var(--shadow-encrypted);
+  }
+
+  .gallery-item:hover {
+    box-shadow: var(--shadow-gold);
+  }
+
+  /* Glitch Effect for Encryption */
+  .glitch {
+    position: relative;
+  }
+
+  .glitch::before,
+  .glitch::after {
+    content: attr(data-text);
+    @apply absolute inset-0;
+    animation: glitch 2s infinite;
+  }
+
+  .glitch::before {
+    @apply text-red-500;
+    animation-delay: 0.1s;
+  }
+
+  .glitch::after {
+    @apply text-blue-500;
+    animation-delay: 0.2s;
+  }
+
+  /* Vault Button Styles */
+  .vault-button {
+    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground;
+    box-shadow: var(--shadow-gold);
+    transition: all 0.3s ease;
+  }
+
+  .vault-button:hover {
+    @apply scale-105;
+    box-shadow: var(--shadow-gold), 0 0 40px hsl(var(--vault-gold) / 0.5);
+  }
+}
+
+@layer utilities {
+  .text-vault-gold {
+    color: hsl(var(--vault-gold));
+  }
+  
+  .bg-vault-surface {
+    background-color: hsl(var(--vault-surface));
+  }
+  
+  .border-vault {
+    border-color: hsl(var(--vault-border));
+  }
+}
+
+/* Keyframe Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes glitch {
+  0%, 100% { clip-path: inset(0 0 0 0); }
+  20% { clip-path: inset(0.1em 0 0.8em 0); }
+  40% { clip-path: inset(0.6em 0 0.2em 0); }
+  60% { clip-path: inset(0.3em 0 0.5em 0); }
+  80% { clip-path: inset(0.9em 0 0.1em 0); }
+}
+
+@keyframes reveal {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
