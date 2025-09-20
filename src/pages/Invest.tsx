@@ -7,16 +7,38 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { Wallet, Shield, TrendingUp, Users, Clock, Lock } from "lucide-react";
-import { useState } from "react";
+import { Wallet, Shield, TrendingUp, Users, Clock, Lock, Calculator, AlertTriangle, CheckCircle, BarChart3 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useAccount } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useInvestInArtwork } from '@/hooks/useVaultContract';
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Invest = () => {
   const [investmentAmount, setInvestmentAmount] = useState("");
+  const [riskTolerance, setRiskTolerance] = useState([50]);
+  const [investmentPeriod, setInvestmentPeriod] = useState("medium");
+  const [selectedInvestment, setSelectedInvestment] = useState<number | null>(null);
   const { isConnected } = useAccount();
   const { investInArtwork, isPending: isInvesting } = useInvestInArtwork();
+
+  // Calculate investment recommendations based on user preferences
+  const calculateRecommendations = () => {
+    const amount = parseFloat(investmentAmount) || 0;
+    const risk = riskTolerance[0];
+    const period = investmentPeriod;
+    
+    return {
+      conservative: amount * 1.12,
+      moderate: amount * 1.18,
+      aggressive: amount * 1.35,
+      riskScore: risk,
+      recommendedStrategy: risk > 70 ? 'aggressive' : risk > 40 ? 'moderate' : 'conservative'
+    };
+  };
+
+  const recommendations = calculateRecommendations();
   
   const featuredInvestments = [
     {
@@ -186,53 +208,170 @@ const Invest = () => {
             <TabsContent value="calculator" className="space-y-8">
               <Card className="max-w-2xl mx-auto">
                 <CardHeader>
-                  <CardTitle>Investment Calculator</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calculator className="w-5 h-5" />
+                    Investment Calculator & Risk Assessment
+                  </CardTitle>
                   <p className="text-muted-foreground">
-                    Calculate potential returns on your art investments
+                    Calculate potential returns and assess risk for your art investments
                   </p>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-2">
+                <CardContent className="space-y-8">
+                  {/* Investment Amount */}
+                  <div className="space-y-4">
                     <Label htmlFor="amount">Investment Amount (ETH)</Label>
                     <Input
                       id="amount"
                       type="number"
+                      step="0.01"
                       placeholder="0.0"
                       value={investmentAmount}
                       onChange={(e) => setInvestmentAmount(e.target.value)}
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-green-500">
-                          {investmentAmount ? (parseFloat(investmentAmount) * 1.12).toFixed(2) : "0.00"} ETH
-                        </div>
-                        <div className="text-sm text-muted-foreground">Conservative (12%)</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-primary">
-                          {investmentAmount ? (parseFloat(investmentAmount) * 1.18).toFixed(2) : "0.00"} ETH
-                        </div>
-                        <div className="text-sm text-muted-foreground">Moderate (18%)</div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-orange-500">
-                          {investmentAmount ? (parseFloat(investmentAmount) * 1.35).toFixed(2) : "0.00"} ETH
-                        </div>
-                        <div className="text-sm text-muted-foreground">Aggressive (35%)</div>
-                      </CardContent>
-                    </Card>
+                  {/* Risk Tolerance Slider */}
+                  <div className="space-y-4">
+                    <Label>Risk Tolerance: {riskTolerance[0]}%</Label>
+                    <Slider
+                      value={riskTolerance}
+                      onValueChange={setRiskTolerance}
+                      max={100}
+                      step={10}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Conservative</span>
+                      <span>Moderate</span>
+                      <span>Aggressive</span>
+                    </div>
                   </div>
 
-                  <Button className="vault-button w-full">
+                  {/* Investment Period */}
+                  <div className="space-y-4">
+                    <Label>Investment Period</Label>
+                    <Select value={investmentPeriod} onValueChange={setInvestmentPeriod}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select investment period" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="short">Short-term (1-6 months)</SelectItem>
+                        <SelectItem value="medium">Medium-term (6-18 months)</SelectItem>
+                        <SelectItem value="long">Long-term (18+ months)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Investment Projections */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Your Investment Projections</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className={recommendations.recommendedStrategy === 'conservative' ? 'ring-2 ring-primary' : ''}>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-green-500">
+                            {investmentAmount ? recommendations.conservative.toFixed(2) : "0.00"} ETH
+                          </div>
+                          <div className="text-sm text-muted-foreground">Conservative (12%)</div>
+                          {recommendations.recommendedStrategy === 'conservative' && (
+                            <Badge className="mt-2">Recommended</Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                      <Card className={recommendations.recommendedStrategy === 'moderate' ? 'ring-2 ring-primary' : ''}>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-primary">
+                            {investmentAmount ? recommendations.moderate.toFixed(2) : "0.00"} ETH
+                          </div>
+                          <div className="text-sm text-muted-foreground">Moderate (18%)</div>
+                          {recommendations.recommendedStrategy === 'moderate' && (
+                            <Badge className="mt-2">Recommended</Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                      <Card className={recommendations.recommendedStrategy === 'aggressive' ? 'ring-2 ring-primary' : ''}>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-orange-500">
+                            {investmentAmount ? recommendations.aggressive.toFixed(2) : "0.00"} ETH
+                          </div>
+                          <div className="text-sm text-muted-foreground">Aggressive (35%)</div>
+                          {recommendations.recommendedStrategy === 'aggressive' && (
+                            <Badge className="mt-2">Recommended</Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Risk Assessment */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Risk Assessment</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4" />
+                            Risk Factors
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Market Volatility</span>
+                              <span className={recommendations.riskScore > 60 ? 'text-orange-500' : 'text-green-500'}>
+                                {recommendations.riskScore > 60 ? 'High' : 'Low'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Liquidity Risk</span>
+                              <span className={recommendations.riskScore > 70 ? 'text-red-500' : 'text-green-500'}>
+                                {recommendations.riskScore > 70 ? 'High' : 'Low'}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Art Market Trends</span>
+                              <span className="text-green-500">Stable</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <CheckCircle className="w-4 h-4" />
+                            Investment Benefits
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <span>FHE Encrypted Privacy</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <span>Fractional Ownership</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-4 h-4 text-green-500" />
+                              <span>Transparent Blockchain</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  <Button 
+                    className="vault-button w-full"
+                    disabled={!isConnected || !investmentAmount || isInvesting}
+                    onClick={() => {
+                      if (isConnected && investmentAmount) {
+                        investInArtwork(1, 1, parseFloat(investmentAmount));
+                      }
+                    }}
+                  >
                     <TrendingUp className="w-4 h-4 mr-2" />
-                    Start Investing
+                    {isInvesting ? 'Processing Investment...' : 'Start Investing'}
                   </Button>
                 </CardContent>
               </Card>

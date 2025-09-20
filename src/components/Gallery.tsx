@@ -3,6 +3,10 @@ import { useAccount } from 'wagmi';
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useState, useEffect } from 'react';
+import { useGetArtworkDetails } from '@/hooks/useVaultContract';
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Clock, Users, TrendingUp } from "lucide-react";
 
 const mockArtworks = [
   {
@@ -76,6 +80,35 @@ const mockArtworks = [
 export const Gallery = () => {
   const { isConnected } = useAccount();
   const [artworks, setArtworks] = useState(mockArtworks);
+  const [selectedArtwork, setSelectedArtwork] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Load artworks from contract (simulated)
+  const loadArtworksFromContract = async () => {
+    setLoading(true);
+    try {
+      // In a real implementation, this would fetch from the contract
+      // For now, we'll use mock data with enhanced details
+      const enhancedArtworks = mockArtworks.map(artwork => ({
+        ...artwork,
+        // Add more realistic data
+        timeRemaining: Math.floor(Math.random() * 72) + 1, // hours
+        totalBids: Math.floor(Math.random() * 100) + 10,
+        priceChange: (Math.random() - 0.5) * 20, // percentage change
+        isTrending: Math.random() > 0.7,
+        isEndingSoon: Math.random() > 0.8
+      }));
+      setArtworks(enhancedArtworks);
+    } catch (error) {
+      console.error('Error loading artworks:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadArtworksFromContract();
+  }, []);
 
   return (
     <section id="gallery" className="py-20 px-6">
@@ -127,10 +160,53 @@ export const Gallery = () => {
           {artworks.map((artwork, index) => (
             <div 
               key={artwork.id}
-              className="animate-[reveal_0.6s_ease-out]"
+              className="animate-[reveal_0.6s_ease-out] relative"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <EncryptedFrame {...artwork} />
+              {/* Artwork Status Badges */}
+              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                {artwork.isTrending && (
+                  <Badge variant="default" className="bg-orange-500">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    Trending
+                  </Badge>
+                )}
+                {artwork.isEndingSoon && (
+                  <Badge variant="destructive">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Ending Soon
+                  </Badge>
+                )}
+              </div>
+
+              {/* Enhanced Artwork Card */}
+              <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+                    onClick={() => setSelectedArtwork(artwork.id)}>
+                <CardContent className="p-0">
+                  <EncryptedFrame {...artwork} />
+                  
+                  {/* Additional Info */}
+                  <div className="p-4 border-t">
+                    <div className="flex justify-between items-center text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-4 h-4" />
+                        <span>{artwork.totalBids} bids</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{artwork.timeRemaining}h left</span>
+                      </div>
+                    </div>
+                    {artwork.priceChange !== 0 && (
+                      <div className={`text-sm mt-2 ${
+                        artwork.priceChange > 0 ? 'text-green-500' : 'text-red-500'
+                      }`}>
+                        {artwork.priceChange > 0 ? '+' : ''}{artwork.priceChange.toFixed(1)}% from last bid
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>

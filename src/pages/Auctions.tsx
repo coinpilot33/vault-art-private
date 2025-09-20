@@ -4,36 +4,59 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Users, TrendingUp, Gavel } from "lucide-react";
+import { Clock, Users, TrendingUp, Gavel, Eye, AlertCircle } from "lucide-react";
+import { useAccount } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useState, useEffect } from 'react';
+import { usePlaceBid, useGetArtworkDetails } from '@/hooks/useVaultContract';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const Auctions = () => {
+  const { isConnected } = useAccount();
+  const [bidAmount, setBidAmount] = useState("");
+  const [selectedAuction, setSelectedAuction] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const { placeBid, isPending: isPlacingBid } = usePlaceBid();
+
   const activeAuctions = [
     {
+      id: 1,
       title: "The Persistence of Memory",
       artist: "Dalí Foundation",
       currentBid: "4.8 ETH",
       timeLeft: "2d 14h 32m",
       bidders: 23,
       progress: 68,
-      status: "Active"
+      status: "Active",
+      minimumBid: "4.9 ETH",
+      isEndingSoon: false
     },
     {
+      id: 2,
       title: "Starry Night Fragments",
       artist: "Van Gogh Estate",
       currentBid: "3.2 ETH",
       timeLeft: "5d 8h 15m",
       bidders: 17,
       progress: 45,
-      status: "Active"
+      status: "Active",
+      minimumBid: "3.3 ETH",
+      isEndingSoon: false
     },
     {
+      id: 3,
       title: "The Scream",
       artist: "Munch Estate",
       currentBid: "6.1 ETH",
       timeLeft: "12h 45m",
       bidders: 31,
       progress: 89,
-      status: "Ending Soon"
+      status: "Ending Soon",
+      minimumBid: "6.2 ETH",
+      isEndingSoon: true
     }
   ];
 
@@ -47,6 +70,21 @@ const Auctions = () => {
       participants: 45
     }
   ];
+
+  const handlePlaceBid = async (auctionId: number) => {
+    if (!bidAmount || !isConnected) return;
+    
+    try {
+      setLoading(true);
+      await placeBid(auctionId, parseFloat(bidAmount));
+      setBidAmount("");
+      setSelectedAuction(null);
+    } catch (error) {
+      console.error('Error placing bid:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,6 +100,17 @@ const Auctions = () => {
               Participate in encrypted art auctions and reveal masterpieces upon completion
             </p>
           </div>
+
+          {/* Wallet Connection Check */}
+          {!isConnected && (
+            <div className="text-center mb-16 p-8 bg-card/50 rounded-lg border border-vault">
+              <h3 className="text-2xl font-semibold mb-4">Connect Your Wallet</h3>
+              <p className="text-muted-foreground mb-6">
+                Connect your wallet to participate in encrypted art auctions
+              </p>
+              <ConnectButton />
+            </div>
+          )}
 
           {/* Auction Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
@@ -131,10 +180,51 @@ const Auctions = () => {
                         <Badge variant={auction.status === "Ending Soon" ? "destructive" : "default"}>
                           {auction.status}
                         </Badge>
-                        <Button className="vault-button" size="sm">
-                          <Gavel className="w-4 h-4 mr-2" />
-                          Place Bid
-                        </Button>
+                        {isConnected ? (
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button className="vault-button" size="sm">
+                                <Gavel className="w-4 h-4 mr-2" />
+                                Place Bid
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Place Bid on {auction.title}</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <div className="text-sm text-muted-foreground">
+                                  Current bid: {auction.currentBid} • Minimum: {auction.minimumBid}
+                                </div>
+                                <div>
+                                  <Label htmlFor="bidAmount">Bid Amount (ETH)</Label>
+                                  <Input
+                                    id="bidAmount"
+                                    type="number"
+                                    step="0.01"
+                                    placeholder={auction.minimumBid}
+                                    value={bidAmount}
+                                    onChange={(e) => setBidAmount(e.target.value)}
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    className="vault-button flex-1"
+                                    onClick={() => handlePlaceBid(auction.id)}
+                                    disabled={!bidAmount || isPlacingBid || loading}
+                                  >
+                                    {isPlacingBid ? 'Placing Bid...' : 'Place Bid'}
+                                  </Button>
+                                  <Button variant="outline" onClick={() => setBidAmount(auction.minimumBid)}>
+                                    Min Bid
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        ) : (
+                          <ConnectButton />
+                        )}
                       </div>
                     </div>
                   </CardContent>
